@@ -1,0 +1,13 @@
+commented:
+  id: 1
+  user_id: 1
+  to_id: 1
+  to_type: User
+  linked_id: 1
+  linked_type: Comment
+  description: Commented on...
+  action_key: new_comment
+  action_type:
+  hidden: 0
+  only_log: 0
+  created_at: <%%= 1.days.ago.to_s :db %>

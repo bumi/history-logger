@@ -1,0 +1,38 @@
+HistoryLogger
+=============
+
+Generator to generate a model for easy (User)Action logging. 
+You can use it for internal logging/reporting stuff but also for creating a facebook-like news stream 
+
+
+Usage
+=======
+script/generate history [model name]
+
+for example:
+script/generate history UserAction
+
+Have a look at the generated model for more information.
+
+Example
+=======
+
+class Comment < AR:Base
+
+	after_create :log_action
+
+	private
+		def after_create
+			UserAction.log_new_comment(:user=>self.user, :linked=>self, :to=>self.commentable)
+		end
+end
+
+
+
+Note:
+=======
+
+this code is a bit old and experimental... but it's used in several production sites ;)
+
+
+Copyright (c) 2007 [Michael Bumann - railslove.com], released under the MIT license
