@@ -13,8 +13,8 @@ class <%= migration_name %> < ActiveRecord::Migration
       t.column :only_log, :boolean
       t.column :created_at, :datetime
     end
-    add_index :<%= table_name %>, :linked_type
-    add_index :<%= table_name %>, :to_type
+    add_index :<%= table_name %>, [:linked_id, :linked_type]
+    add_index :<%= table_name %>, [:to_id, :to_type]
     add_index :<%= table_name %>, :action_key
   end
 
