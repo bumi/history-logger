@@ -30,7 +30,7 @@ class <%= class_name %> < ActiveRecord::Base
   # uses '%' (see sprintf) to fromat the description text. passes {:user.to_s, :user_url, :to.to_s, :to_url, :linked.to_s, :linked_url} to your description.
   # use for example %{user} to insert the linked user.to_s
   def to_s
-    (self.description.blank? ? actions[self.action_key.to_sym] : self.description) % {:user => user.to_s, :user_url => (user.respond_to?("url") ? user.url : ""), :linked => (linked.to_s || "").strip_tags, :linked_url => (linked.respond_to?("url") ? linked.url : ""), :to => to.to_s, :to_url => (to.respond_to?("url") ? to.url : "")}
+    self.format_string((self.description.blank? ? actions[self.action_key.to_sym] : self.description), {:user => user.to_s, :user_url => (user.respond_to?("url") ? user.url : ""), :linked => (linked.to_s || "").strip_tags, :linked_url => (linked.respond_to?("url") ? linked.url : ""), :to => to.to_s, :to_url => (to.respond_to?("url") ? to.url : "")})
   end
   
   def validate
@@ -69,20 +69,33 @@ class <%= class_name %> < ActiveRecord::Base
     self.update_attribute(:hidden, true)
   end
   
+  #borrowed from gettext's %-method 
+  def format_string(string,args)
+    if args.kind_of?(Hash)
+      args.each {|key, value|
+        string.gsub!(/\%\{#{key}\}/, value.to_s)
+      }
+      string
+    else
+      string = gsub(/%\{/, '%%{')
+      string % args
+    end
+  end
+  
   private
-
-   def self.method_missing(method,*args)
-     method_key = method.to_s
-     return super(method,args) unless method_key.starts_with?("log_")
-     method_key.gsub!(/^log_/,"")
-     args = args[0] || {}
-     if match = method_key.match(/daily_|monthly_/)
-       call = match[0]
-       method_key.gsub!(call,"")
-       call.gsub!("_","")
-       return self.send(call.to_sym,args.merge({:action_key=>method_key}))
-     end
-     self.create(args.merge({:action_key=>method_key}))
-   end
+   
+  def self.method_missing(method,*args)
+    method_key = method.to_s
+    return super(method,args) unless method_key.starts_with?("log_")
+    method_key.gsub!(/^log_/,"")
+    args = args[0] || {}
+    if match = method_key.match(/daily_|monthly_/)
+      call = match[0]
+      method_key.gsub!(call,"")
+      call.gsub!("_","")
+      return self.send(call.to_sym,args.merge({:action_key=>method_key}))
+    end
+    self.create(args.merge({:action_key=>method_key}))
+  end
 
 end
